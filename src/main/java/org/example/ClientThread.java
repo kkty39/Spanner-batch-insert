@@ -1,9 +1,9 @@
 package org.example;
 
 public class ClientThread implements Runnable {
-    private SpannerClient spannerClient;
+    private final SpannerClient spannerClient;
     // number of operations
-    private int opsCount;
+    private final int opsCount;
     // number of operations done
     private int opsDone;
 

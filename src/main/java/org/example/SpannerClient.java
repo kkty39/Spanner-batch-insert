@@ -22,12 +22,12 @@ public class SpannerClient {
 
     private static String TABLE_NAME;
 
-    NumberGenerator keySequence;
+    private final NumberGenerator keySequence;
     private final static String COLUMN_NAME = "field0";
     private final static String COLUMN_VALUE = "1000";
 
     // Single Spanner client per process.
-    private static Spanner spanner = null;
+    private Spanner spanner = null;
 
     // Single database client per process.
     private static DatabaseClient dbClient = null;
@@ -51,8 +51,9 @@ public class SpannerClient {
     private static final Logger LOGGER = Logger.getLogger(SpannerClient.class.getName());
     String PRIMARY_KEY_COLUMN = "id";
 
-    public SpannerClient(Properties properties) {
+    public SpannerClient(Properties properties, NumberGenerator keySequence) {
         this.properties = properties;
+        this.keySequence = keySequence;
     }
 
     public void init() {

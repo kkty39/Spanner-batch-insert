@@ -20,12 +20,13 @@ public class Main {
 
     private static final Properties properties  = new Properties();
 
+    private static NumberGenerator keySequence;
+
     private static void initProperties() {
         try {
             InputStream inputStream = Main.class.getResourceAsStream("/application.properties");
-            assert inputStream != null;
-            System.out.println(inputStream.toString());
             properties.load(inputStream);
+            assert inputStream != null;
             inputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -38,6 +39,8 @@ public class Main {
     public static void main(String[] args) {
         // get properties
         initProperties();
+
+        keySequence = new NumberGenerator(0L);
 
         // init each clientThread
         final List<ClientThread> clients = getClientThreads();
@@ -54,7 +57,7 @@ public class Main {
         }
 
         // wrap up
-        Integer opsDone = 0;
+        int opsDone = 0;
         for (Map.Entry<Thread, ClientThread> entry : threads.entrySet()) {
             try {
                 entry.getKey().join();
@@ -72,7 +75,7 @@ public class Main {
     private static List<ClientThread> getClientThreads() {
         final List<ClientThread> clients = new ArrayList<>(threadCount);
         for (int threadid = 0; threadid < threadCount; threadid++) {
-            SpannerClient spannerClient = new SpannerClient(properties);
+            SpannerClient spannerClient = new SpannerClient(properties, keySequence);
 
             int threadopcount = opsCount / threadCount;
 
