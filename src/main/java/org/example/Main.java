@@ -8,10 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 public class Main {
 
-
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
     private static Integer threadCount;
     // number of operations
     private static Integer opsCount;
@@ -63,6 +64,8 @@ public class Main {
                 // ignored
             }
         }
+        LOGGER.info(opsDone + " operations done...");
+        LOGGER.info("Exiting application...");
 
         System.exit(0);
     }
