@@ -17,9 +17,7 @@ public class Main {
     // number of operations
     private static Integer opsCount;
 
-    private static Integer opsDone;
-
-    private static Properties properties  = new Properties();
+    private static final Properties properties  = new Properties();
 
     private static void initProperties() {
         try {
@@ -55,7 +53,7 @@ public class Main {
         }
 
         // wrap up
-        opsDone = 0;
+        Integer opsDone = 0;
         for (Map.Entry<Thread, ClientThread> entry : threads.entrySet()) {
             try {
                 entry.getKey().join();
