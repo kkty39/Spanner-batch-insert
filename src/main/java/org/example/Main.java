@@ -40,6 +40,34 @@ public class Main {
         initProperties();
 
         // init each clientThread
+        final List<ClientThread> clients = getClientThreads();
+
+        // actual operations
+        final Map<Thread, ClientThread> threads = new HashMap<>(threadCount);
+        for (ClientThread client : clients) {
+            Thread t = new Thread(client);
+            threads.put(t, client);
+        }
+
+        for (Thread t : threads.keySet()) {
+            t.start();
+        }
+
+        // wrap up
+        opsDone = 0;
+        for (Map.Entry<Thread, ClientThread> entry : threads.entrySet()) {
+            try {
+                entry.getKey().join();
+                opsDone += entry.getValue().getOpsDone();
+            } catch (InterruptedException ignored) {
+                // ignored
+            }
+        }
+
+        System.exit(0);
+    }
+
+    private static List<ClientThread> getClientThreads() {
         final List<ClientThread> clients = new ArrayList<>(threadCount);
         for (int threadid = 0; threadid < threadCount; threadid++) {
             SpannerClient spannerClient = new SpannerClient(properties);
@@ -54,28 +82,6 @@ public class Main {
             ClientThread t = new ClientThread(spannerClient, threadopcount);
             clients.add(t);
         }
-
-        final Map<Thread, ClientThread> threads = new HashMap<>(threadCount);
-        for (ClientThread client : clients) {
-            Thread t = new Thread(client);
-            threads.put(t, client);
-        }
-
-        for (Thread t : threads.keySet()) {
-            t.start();
-        }
-
-        opsDone = 0;
-
-        for (Map.Entry<Thread, ClientThread> entry : threads.entrySet()) {
-            try {
-                entry.getKey().join();
-                opsDone += entry.getValue().getOpsDone();
-            } catch (InterruptedException ignored) {
-                // ignored
-            }
-        }
-
-        System.exit(0);
+        return clients;
     }
 }

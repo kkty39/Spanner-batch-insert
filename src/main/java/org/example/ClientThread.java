@@ -1,11 +1,11 @@
 package org.example;
 
-public class ClientThread implements Runnable{
+public class ClientThread implements Runnable {
     private SpannerClient spannerClient;
     // number of operations
     private int opsCount;
     // number of operations done
-    private  int opsDone;
+    private int opsDone;
 
     public ClientThread(SpannerClient spannerClient, int opsCount) {
         this.spannerClient = spannerClient;
@@ -18,6 +18,27 @@ public class ClientThread implements Runnable{
 
     @Override
     public void run() {
-        spannerClient.init();
+        try {
+            spannerClient.init();
+        } catch (Exception e) {
+            e.printStackTrace();
+            e.printStackTrace(System.out);
+            return;
+        }
+
+
+        while (opsDone < opsCount) {
+            try {
+                spannerClient.start();
+                if (spannerClient.doInsert()) {
+                    spannerClient.commit();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                spannerClient.abort();
+            }
+            opsDone++;
+        }
+        spannerClient.cleanup();
     }
 }
