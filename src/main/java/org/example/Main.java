@@ -2,6 +2,7 @@ package org.example;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,11 +22,11 @@ public class Main {
 
     private static void initProperties() {
         try {
-            String path = Objects.requireNonNull(Thread.currentThread().getContextClassLoader()
-                    .getResource("application.properties")).getPath();
-            FileInputStream fileInputStream = new FileInputStream(path);
-            properties.load(fileInputStream);
-            fileInputStream.close();
+            InputStream inputStream = Main.class.getResourceAsStream("/application.properties");
+            assert inputStream != null;
+            System.out.println(inputStream.toString());
+            properties.load(inputStream);
+            inputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
