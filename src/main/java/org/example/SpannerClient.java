@@ -166,4 +166,8 @@ public class SpannerClient {
         LOGGER.info(Thread.currentThread().getName()+ "    aborted, Size of mutation buffers array: " + bufferedMutations.size());
         transactionManager.close();
     }
+
+    public int getAbortedExceptionCount() {
+        return abortedExceptionCount;
+    }
 }

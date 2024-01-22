@@ -63,11 +63,13 @@ public class Main {
             try {
                 entry.getKey().join();
                 opsDone += entry.getValue().getOpsDone();
+                totalAbortedExceptions += entry.getValue().getAbortedExceptionCount();
             } catch (InterruptedException ignored) {
                 // ignored
             }
         }
         LOGGER.info(opsDone + " operations done...");
+        LOGGER.info(totalAbortedExceptions + " total aborted exceptions...");
         LOGGER.info("Exiting application...");
     }
 

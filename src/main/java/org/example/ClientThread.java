@@ -41,4 +41,8 @@ public class ClientThread implements Runnable {
         }
         spannerClient.cleanup();
     }
+
+    public int getAbortedExceptionCount() {
+        return this.spannerClient.getAbortedExceptionCount();
+    }
 }
