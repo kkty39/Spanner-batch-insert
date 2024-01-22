@@ -87,7 +87,8 @@ public class SpannerClient {
     public boolean doInsert() {
         long keyNum = keySequence.nextValue();
         String dbKey = "user" + keyNum;
-        if (this.insert(dbKey) == Status.OK || this.insert(dbKey) == Status.BATCHED_OK) {
+        Status status = this.insert(dbKey);
+        if (status == Status.OK || status == Status.BATCHED_OK) {
             actualOpCount.addAndGet(1);
             return true;
         } else {

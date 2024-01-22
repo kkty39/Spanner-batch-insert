@@ -23,11 +23,8 @@ public class Main {
     private static NumberGenerator keySequence;
 
     private static void initProperties() {
-        try {
-            InputStream inputStream = Main.class.getResourceAsStream("/application.properties");
+        try (InputStream inputStream = Main.class.getResourceAsStream("/application.properties")) {
             properties.load(inputStream);
-            assert inputStream != null;
-            inputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -37,6 +34,7 @@ public class Main {
         LOGGER.info("Thread count: " + threadCount);
         LOGGER.info("Operation count: " + opsCount);
     }
+
 
     public static void main(String[] args) {
         // get properties
