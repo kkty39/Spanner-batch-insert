@@ -160,7 +160,7 @@ public class SpannerClient {
         System.err.println("\n---------------------------------------------------------------------------------------------------------------\n" +
                 Thread.currentThread().getName() + " in SpannerClient.commit() method - AbortedException occurred.\n" +
                 "Current size of mutation buffers array: " + bufferedMutations.size() + ".\n" +
-                "Stack Trace:");
+                "Stack Trace: " + e);
         e.printStackTrace(System.err);
         System.err.println("\n");
     }
