@@ -151,9 +151,6 @@ public class SpannerClient {
             transactionManager.commit();
         } catch (AbortedException e) {
             abortedExceptionCount++;
-//            LOGGER.info( "\n-------------------------------------\n" + Thread.currentThread().getName()
-//                    + "    Aborted Exception occurred.\nStack Trace:\n"
-//                    + Arrays.toString(e.getStackTrace()) + "\n");
             LOGGER.log(Level.INFO, "\n-------------------------------------\n" +
                     Thread.currentThread().getName() + " - Aborted Exception occurred.\n" +
                     "Current size of mutation buffers array: " + bufferedMutations.size() + ".\n" +
