@@ -154,7 +154,7 @@ public class SpannerClient {
             System.err.println("\n---------------------------------------------------------------------------------------------------------------\n" +
                     Thread.currentThread().getName() + " in SpannerClient.commit() method- AbortedException occurred.\n" +
                     "Current size of mutation buffers array: " + bufferedMutations.size() + ".\n" +
-                    "Stack Trace:" + Arrays.toString(e.getStackTrace()) + "\n\n");
+                    "Stack Trace:" + e + "\n\n");
             throw new RuntimeException("Error in commit: ", e);
         }
     }

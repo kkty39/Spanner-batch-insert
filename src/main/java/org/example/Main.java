@@ -66,7 +66,7 @@ public class Main {
                 // ignored
             }
         }
-        LOGGER.info(opsDone + " operations done, totalAbortedExceptions" + " total aborted exceptions...");
+        LOGGER.info(opsDone + " operations done, " + totalAbortedExceptions + " total aborted exceptions.");
         LOGGER.info("Exiting application...");
     }
 
