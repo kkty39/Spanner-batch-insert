@@ -155,7 +155,9 @@ public class SpannerClient {
 //                    + "    Aborted Exception occurred.\nStack Trace:\n"
 //                    + Arrays.toString(e.getStackTrace()) + "\n");
             LOGGER.log(Level.INFO, "\n-------------------------------------\n" +
-                    Thread.currentThread().getName() + " - Aborted Exception occurred.\n", e);
+                    Thread.currentThread().getName() + " - Aborted Exception occurred.\n" +
+                    "Current size of mutation buffers array: " + bufferedMutations.size() + ".\n" +
+                    "Stack Trace:\n", e);
             throw new RuntimeException("Error in commit: ", e);
         }
     }
