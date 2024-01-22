@@ -91,7 +91,7 @@ For further information or specific queries regarding the batch insert workflow,
 ### 6. Application Properties (application.properties)
 - Contains settings like Spanner instance, database details, table name, number of batch inserts, total operations count, and thread count.
 
-### Sample Error logging
+## Sample Error logging
 Mostly two types of error: 
 1. Database schema has changed (but no modifications on schema actually).  
 2. Transaction was aborted and retry_delay was given (happens in empty commits as there are mutations remained in the local cache array).
