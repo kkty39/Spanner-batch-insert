@@ -136,7 +136,6 @@ public class SpannerClient {
     }
 
     public void start() {
-        LOGGER.info(Thread.currentThread().getName() + "    started.");
         transactionManager = dbClient.transactionManager();
         tx = transactionManager.begin();
     }
