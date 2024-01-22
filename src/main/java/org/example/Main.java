@@ -58,6 +58,7 @@ public class Main {
 
         // wrap up
         int opsDone = 0;
+        int totalAbortedExceptions = 0;
         for (Map.Entry<Thread, ClientThread> entry : threads.entrySet()) {
             try {
                 entry.getKey().join();
@@ -68,8 +69,6 @@ public class Main {
         }
         LOGGER.info(opsDone + " operations done...");
         LOGGER.info("Exiting application...");
-
-//        System.exit(0);
     }
 
     private static List<ClientThread> getClientThreads() {

@@ -34,7 +34,7 @@ public class ClientThread implements Runnable {
                     spannerClient.commit();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+//                e.printStackTrace();
                 spannerClient.abort();
             }
             opsDone++;

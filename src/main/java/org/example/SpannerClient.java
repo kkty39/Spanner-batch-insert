@@ -11,6 +11,7 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -50,6 +51,10 @@ public class SpannerClient {
     AtomicInteger actualOpCount = new AtomicInteger(0);
     private static final Logger LOGGER = Logger.getLogger(SpannerClient.class.getName());
     String PRIMARY_KEY_COLUMN = "id";
+
+    // count the number of AbortedException occurred in this thread
+    private int abortedExceptionCount = 0;
+
 
     public SpannerClient(Properties properties, NumberGenerator keySequence) {
         this.properties = properties;
@@ -145,7 +150,12 @@ public class SpannerClient {
         try {
             transactionManager.commit();
         } catch (AbortedException e) {
-            LOGGER.info(Thread.currentThread().getName() + "    Aborted Exception occurred.");
+            abortedExceptionCount++;
+//            LOGGER.info( "\n-------------------------------------\n" + Thread.currentThread().getName()
+//                    + "    Aborted Exception occurred.\nStack Trace:\n"
+//                    + Arrays.toString(e.getStackTrace()) + "\n");
+            LOGGER.log(Level.INFO, "\n-------------------------------------\n" +
+                    Thread.currentThread().getName() + " - Aborted Exception occurred.\n", e);
             throw new RuntimeException("Error in commit: ", e);
         }
     }
