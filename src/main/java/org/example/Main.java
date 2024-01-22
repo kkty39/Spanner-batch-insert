@@ -29,8 +29,7 @@ public class Main {
 
         threadCount = Integer.parseInt(properties.getProperty("threadcount"));
         opsCount = Integer.parseInt(properties.getProperty("opsCount", "1"));
-        LOGGER.info("Thread count: " + threadCount);
-        LOGGER.info("Operation count: " + opsCount);
+        LOGGER.info("Thread count: " + threadCount + ", Operation count: " + opsCount);
     }
 
 
