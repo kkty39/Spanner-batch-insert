@@ -36,7 +36,7 @@ org.example
 ### 3. SpannerClient (SpannerClient.java)
 - Interacts with Google Cloud Spanner.
 - Manages database transactions, performs insert operations, and handles batching of inserts.
-- Core component for database operations, managing transaction management and error handling.
+- In each operation, we add one mutation to the local cached array, and when the size of array reaches batch size, we put the array into mutation buffer.
 
 ### 4. NumberGenerator (NumberGenerator.java)
 - Generates a sequence of numbers as keys for database operations.
@@ -49,10 +49,40 @@ org.example
 ## Application Properties (application.properties)
 - Contains settings like Spanner instance, database details, table name, number of batch inserts, total operations count, and thread count.
 
-## Functionality
-- Designed to test and measure performance of batch insert operations in Google Cloud Spanner using multi-threading.
-- Divides total operations among multiple threads, each performing a portion of the operations.
-- Useful for benchmarking and stress-testing database performance under concurrent load.
+# Batch Insert Workflow in SpannerClient
+
+## Overview
+This section outlines the workflow of the batch insert mechanism implemented in the `SpannerClient` class. The process is designed to optimize interactions with the Google Cloud Spanner database by efficiently grouping multiple insert operations into fewer transactions, thereby enhancing performance and reducing network load.
+
+## Workflow Details
+
+### 1. Mutation Buffer Initialization
+- **Initialization:** The `bufferedMutations` list, an `ArrayList<Mutation>`, is initialized at the start. Each `Mutation` instance encapsulates a proposed change, such as an insert or update operation, to be committed to the Spanner database.
+
+### 2. Building and Buffering Mutations
+- **Creation of Mutations:** The `insert(String key)` method is responsible for generating a new mutation for every insert operation requested.
+- **Mutation Construction:** Utilizing the `Mutation.newInsertOrUpdateBuilder(TABLE_NAME)` method, these mutations are populated with specific key-value pairs representing the data to be inserted.
+- **Buffering Mutations:** Constructed mutations are added sequentially to the `bufferedMutations` list for subsequent batch processing.
+
+### 3. Batching Logic and Execution
+- **Checking Batch Size:** The `insert` method monitors the `bufferedMutations` size to ensure it does not exceed the predefined `batchInserts` threshold, a parameter configured in the application properties.
+- **Mutation Addition and Status Update:** Mutations are continuously added to the batch until the threshold is reached, at which point the method signals a `Status.BATCHED_OK` and proceeds to process the batch.
+- **Batch Processing:** Achieved by buffering the accumulated mutations in the current transaction context (`tx.buffer(bufferedMutations)`), followed by clearing the buffer for the next set of operations.
+
+### 4. Transaction Management
+- **Initialization and Commitment of Transactions:** Managed by `TransactionManager` and `TransactionContext`, the process involves initializing new transactions with `start()` and committing each batch with `commit()`.
+- **Exception Handling:** In cases where an `AbortedException` occurs, the transaction is promptly aborted with the provision for a retry mechanism.
+
+### 5. Cleanup and Handling Remaining Mutations
+- **Post-operation Cleanup:** Invoked via the `cleanup()` method, this step ensures that any remaining mutations in `bufferedMutations` are committed. This scenario typically arises when the total number of operations does not align perfectly with the batch size.
+
+### 6. Ensuring Thread Safety
+- **Thread-specific Instances:** To maintain thread safety, each application thread instantiates its own `SpannerClient` object, complete with a dedicated `bufferedMutations` list. This isolation ensures that each thread operates independently on its batch.
+
+## Impact on Efficiency and Performance
+- **Optimized Efficiency:** By aggregating multiple insert operations into fewer comprehensive transactions, the batch insert mechanism significantly reduces the frequency of network calls and transaction commits to the Spanner database.
+- **Enhanced Performance:** Particularly beneficial when handling large-scale insertions, this strategy markedly improves overall database performance.
+
 
 ### Sample Error logging
 ```text
@@ -62,7 +92,7 @@ Jan 22, 2024 7:04:23 AM org.example.Main initProperties
 INFO: Operation count: 1000000
 Jan 22, 2024 7:04:45 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-102 - Aborted Exception occurred.
 Current size of mutation buffers array: 205.
 Stack Trace:
@@ -145,7 +175,7 @@ retry_delay {
 
 Jan 22, 2024 7:04:45 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-162 - Aborted Exception occurred.
 Current size of mutation buffers array: 198.
 Stack Trace:
@@ -226,13 +256,9 @@ retry_delay {
 	at io.grpc.Status.asRuntimeException(Status.java:537)
 	... 21 more
 
-Jan 22, 2024 7:04:45 AM org.example.SpannerClient abort
-INFO: Thread-102    aborted, Size of mutation buffers array: 205
-Jan 22, 2024 7:04:45 AM org.example.SpannerClient abort
-INFO: Thread-162    aborted, Size of mutation buffers array: 198
 Jan 22, 2024 7:05:04 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-31 - Aborted Exception occurred.
 Current size of mutation buffers array: 481.
 Stack Trace:
@@ -313,11 +339,9 @@ retry_delay {
 	at io.grpc.Status.asRuntimeException(Status.java:537)
 	... 21 more
 
-Jan 22, 2024 7:05:04 AM org.example.SpannerClient abort
-INFO: Thread-31    aborted, Size of mutation buffers array: 481
 Jan 22, 2024 7:05:04 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-83 - Aborted Exception occurred.
 Current size of mutation buffers array: 491.
 Stack Trace:
@@ -398,11 +422,9 @@ retry_delay {
 	at io.grpc.Status.asRuntimeException(Status.java:537)
 	... 21 more
 
-Jan 22, 2024 7:05:04 AM org.example.SpannerClient abort
-INFO: Thread-83    aborted, Size of mutation buffers array: 491
 Jan 22, 2024 7:05:04 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-89 - Aborted Exception occurred.
 Current size of mutation buffers array: 482.
 Stack Trace:
@@ -483,11 +505,9 @@ retry_delay {
 	at io.grpc.Status.asRuntimeException(Status.java:537)
 	... 21 more
 
-Jan 22, 2024 7:05:04 AM org.example.SpannerClient abort
-INFO: Thread-89    aborted, Size of mutation buffers array: 482
 Jan 22, 2024 7:05:04 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-78 - Aborted Exception occurred.
 Current size of mutation buffers array: 470.
 Stack Trace:
@@ -568,11 +588,9 @@ retry_delay {
 	at io.grpc.Status.asRuntimeException(Status.java:537)
 	... 21 more
 
-Jan 22, 2024 7:05:04 AM org.example.SpannerClient abort
-INFO: Thread-78    aborted, Size of mutation buffers array: 470
 Jan 22, 2024 7:06:25 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-24 - Aborted Exception occurred.
 Current size of mutation buffers array: 713.
 Stack Trace:
@@ -643,7 +661,7 @@ Caused by: io.grpc.StatusRuntimeException: ABORTED: Database schema has changed
 
 Jan 22, 2024 7:06:25 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-129 - Aborted Exception occurred.
 Current size of mutation buffers array: 710.
 Stack Trace:
@@ -714,7 +732,7 @@ Caused by: io.grpc.StatusRuntimeException: ABORTED: Database schema has changed
 
 Jan 22, 2024 7:06:25 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-109 - Aborted Exception occurred.
 Current size of mutation buffers array: 719.
 Stack Trace:
@@ -783,11 +801,9 @@ Caused by: io.grpc.StatusRuntimeException: ABORTED: Database schema has changed
 	at io.grpc.Status.asRuntimeException(Status.java:537)
 	... 21 more
 
-Jan 22, 2024 7:06:25 AM org.example.SpannerClient abort
-INFO: Thread-109    aborted, Size of mutation buffers array: 719
 Jan 22, 2024 7:06:25 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-52 - Aborted Exception occurred.
 Current size of mutation buffers array: 731.
 Stack Trace:
@@ -858,7 +874,7 @@ Caused by: io.grpc.StatusRuntimeException: ABORTED: Database schema has changed
 
 Jan 22, 2024 7:06:25 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-7 - Aborted Exception occurred.
 Current size of mutation buffers array: 690.
 Stack Trace:
@@ -927,11 +943,9 @@ Caused by: io.grpc.StatusRuntimeException: ABORTED: Database schema has changed
 	at io.grpc.Status.asRuntimeException(Status.java:537)
 	... 21 more
 
-Jan 22, 2024 7:06:25 AM org.example.SpannerClient abort
-INFO: Thread-7    aborted, Size of mutation buffers array: 690
 Jan 22, 2024 7:06:25 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-214 - Aborted Exception occurred.
 Current size of mutation buffers array: 743.
 Stack Trace:
@@ -1002,7 +1016,7 @@ Caused by: io.grpc.StatusRuntimeException: ABORTED: Database schema has changed
 
 Jan 22, 2024 7:06:25 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-166 - Aborted Exception occurred.
 Current size of mutation buffers array: 697.
 Stack Trace:
@@ -1071,11 +1085,9 @@ Caused by: io.grpc.StatusRuntimeException: ABORTED: Database schema has changed
 	at io.grpc.Status.asRuntimeException(Status.java:537)
 	... 21 more
 
-Jan 22, 2024 7:06:25 AM org.example.SpannerClient abort
-INFO: Thread-166    aborted, Size of mutation buffers array: 697
 Jan 22, 2024 7:06:25 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-3 - Aborted Exception occurred.
 Current size of mutation buffers array: 685.
 Stack Trace:
@@ -1144,11 +1156,9 @@ Caused by: io.grpc.StatusRuntimeException: ABORTED: Database schema has changed
 	at io.grpc.Status.asRuntimeException(Status.java:537)
 	... 21 more
 
-Jan 22, 2024 7:06:25 AM org.example.SpannerClient abort
-INFO: Thread-3    aborted, Size of mutation buffers array: 685
 Jan 22, 2024 7:06:25 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-42 - Aborted Exception occurred.
 Current size of mutation buffers array: 730.
 Stack Trace:
@@ -1217,15 +1227,8 @@ Caused by: io.grpc.StatusRuntimeException: ABORTED: Database schema has changed
 	at io.grpc.Status.asRuntimeException(Status.java:537)
 	... 21 more
 
-Jan 22, 2024 7:06:25 AM org.example.SpannerClient abort
-INFO: Thread-42    aborted, Size of mutation buffers array: 730
-Jan 22, 2024 7:06:25 AM org.example.SpannerClient abort
-INFO: Thread-214    aborted, Size of mutation buffers array: 743
-Jan 22, 2024 7:06:25 AM org.example.SpannerClient abort
-INFO: Thread-52    aborted, Size of mutation buffers array: 731
-Jan 22, 2024 7:06:25 AM org.example.SpannerClient commit
 INFO: 
--------------------------------------
+--------------------------------------------------------------------------
 Thread-220 - Aborted Exception occurred.
 Current size of mutation buffers array: 700.
 Stack Trace:
@@ -1294,12 +1297,7 @@ Caused by: io.grpc.StatusRuntimeException: ABORTED: Database schema has changed
 	at io.grpc.Status.asRuntimeException(Status.java:537)
 	... 21 more
 
-Jan 22, 2024 7:06:25 AM org.example.SpannerClient abort
-INFO: Thread-220    aborted, Size of mutation buffers array: 700
-Jan 22, 2024 7:06:25 AM org.example.SpannerClient abort
-INFO: Thread-24    aborted, Size of mutation buffers array: 713
-Jan 22, 2024 7:06:25 AM org.example.SpannerClient abort
-INFO: Thread-129    aborted, Size of mutation buffers array: 710
+
 Jan 22, 2024 7:08:58 AM org.example.Main main
 INFO: 1000000 operations done...
 Jan 22, 2024 7:08:58 AM org.example.Main main

@@ -151,16 +151,19 @@ public class SpannerClient {
             transactionManager.commit();
         } catch (AbortedException e) {
             abortedExceptionCount++;
-            LOGGER.log(Level.INFO, "\n-------------------------------------\n" +
-                    Thread.currentThread().getName() + " - Aborted Exception occurred.\n" +
+//            LOGGER.info("\n---------------------------------------------------------------------------------------------------------------\n" +
+//                    Thread.currentThread().getName() + " - Aborted Exception occurred.\n" +
+//                    "Current size of mutation buffers array: " + bufferedMutations.size() + ".\n" +
+//                    "Stack Trace:" + Arrays.toString(e.getStackTrace()) + "\n\n");
+            System.err.println("\n---------------------------------------------------------------------------------------------------------------\n" +
+                    Thread.currentThread().getName() + " in SpannerClient.commit() method- AbortedException occurred.\n" +
                     "Current size of mutation buffers array: " + bufferedMutations.size() + ".\n" +
-                    "Stack Trace:\n", e);
+                    "Stack Trace:" + Arrays.toString(e.getStackTrace()) + "\n\n");
             throw new RuntimeException("Error in commit: ", e);
         }
     }
 
     public void abort() {
-        LOGGER.info(Thread.currentThread().getName()+ "    aborted, Size of mutation buffers array: " + bufferedMutations.size());
         transactionManager.close();
     }
 
