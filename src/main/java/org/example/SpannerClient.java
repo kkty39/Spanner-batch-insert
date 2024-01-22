@@ -136,6 +136,7 @@ public class SpannerClient {
     }
 
     public void start() {
+        LOGGER.info(Thread.currentThread().getName() + "    started.");
         transactionManager = dbClient.transactionManager();
         tx = transactionManager.begin();
     }
@@ -144,12 +145,13 @@ public class SpannerClient {
         try {
             transactionManager.commit();
         } catch (AbortedException e) {
+            LOGGER.info(Thread.currentThread().getName() + "    Aborted Exception occurred.");
             throw new RuntimeException("Error in commit: ", e);
         }
     }
 
     public void abort() {
-        LOGGER.info("Size of mutation buffers array: " + bufferedMutations.size());
+        LOGGER.info(Thread.currentThread().getName()+ "    aborted, Size of mutation buffers array: " + bufferedMutations.size());
         transactionManager.close();
     }
 }
