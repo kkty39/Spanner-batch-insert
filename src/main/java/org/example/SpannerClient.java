@@ -80,7 +80,6 @@ public class SpannerClient {
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "init()", e);
             }
-
         }
     }
 
@@ -92,6 +91,7 @@ public class SpannerClient {
             actualOpCount.addAndGet(1);
             return true;
         } else {
+            LOGGER.info("doinsert() returning false...");
             return false;
         }
     }

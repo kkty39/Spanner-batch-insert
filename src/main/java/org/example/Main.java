@@ -69,7 +69,7 @@ public class Main {
         LOGGER.info(opsDone + " operations done...");
         LOGGER.info("Exiting application...");
 
-        System.exit(0);
+//        System.exit(0);
     }
 
     private static List<ClientThread> getClientThreads() {
