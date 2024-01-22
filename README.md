@@ -93,4 +93,18 @@ For further information or specific queries regarding the batch insert workflow,
 
 ### Sample Error logging
 ```text
+---------------------------------------------------------------------------------------------------------------
+Thread-138 in SpannerClient.commit() method- AbortedException occurred.
+Current size of mutation buffers array: 94.
+Stack Trace:com.google.cloud.spanner.AbortedException: ABORTED: io.grpc.StatusRuntimeException: ABORTED: Database schema has changed
+
+
+
+---------------------------------------------------------------------------------------------------------------
+Thread-0 in SpannerClient.commit() method- AbortedException occurred.
+Current size of mutation buffers array: 77.
+Stack Trace:com.google.cloud.spanner.AbortedException: ABORTED: io.grpc.StatusRuntimeException: ABORTED: Transaction was aborted.
+retry_delay {
+  nanos: 38655229
+}
 ```
