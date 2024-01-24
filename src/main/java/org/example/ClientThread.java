@@ -33,11 +33,15 @@ public class ClientThread implements Runnable {
                 // Start a new transaction.
                 spannerClient.start();
                 // Perform an insert operation. If successful, commit the transaction.
+
+                /*
                 if (spannerClient.doInsert() == Status.OK) {
                     spannerClient.commit();
                 } else {
                     spannerClient.abort();
-                }
+                }*/
+
+                spannerClient.commit();
             } catch (Exception e) {
                 // Uncomment to enable stack trace printing on exception.
                 // e.printStackTrace();
