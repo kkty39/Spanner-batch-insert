@@ -16,16 +16,24 @@
     </properties>
 
     <dependencies>
+<!--        <dependency>-->
+<!--            <groupId>com.google.cloud</groupId>-->
+<!--            <artifactId>google-cloud-spanner</artifactId>-->
+<!--&lt;!&ndash;            <version>6.51.0</version>&ndash;&gt;-->
+<!--            <version>6.36.0</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.google.guava</groupId>-->
+<!--                    <artifactId>guava-jdk5</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-spanner</artifactId>
-<!--            <version>6.51.0</version>-->
-            <version>6.36.0</version>
+            <!--            <version>6.51.0</version>-->
+            <version>6.56.0</version>
             <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava-jdk5</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
     </dependencies>
